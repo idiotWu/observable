@@ -13,7 +13,7 @@ npm install observable.js
 ## Basical Usage
 
 ```javascript
-var Observable = require('observable');
+var Observable = require('observable.js');
 
 var obs = new Observable(object, listener, accepts);
 ```
