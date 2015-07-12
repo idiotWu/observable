@@ -1,5 +1,5 @@
-// const ES7_OBSERVE = typeof Object.observe === 'function' && Object.observe;
-const ES7_OBSERVE = false;
+const ES7_OBSERVE = typeof Object.observe === 'function' && Object.observe;
+// const ES7_OBSERVE = false;
 const DEFAULT_ACCEPTS = ['add', 'update', 'delete'];
 
 class ObservableObject {
