@@ -1,0 +1,33 @@
+{
+  "name": "observable",
+  "version": "0.0.1",
+  "description": "Object.observe() like library",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "npm test",
+    "test": "npm run test-core && npm run test-unique",
+    "test-core": "mocha test/core-tests.js",
+    "test-unique": "mocha test/unique-tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idiotWu/observable.git"
+  },
+  "keywords": [
+    "object",
+    "observe",
+    "mutable"
+  ],
+  "author": "Dolphin Wood <dolphin.w.e@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/idiotWu/observable/issues"
+  },
+  "homepage": "https://github.com/idiotWu/observable#readme",
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.1.0",
+    "gulp-mocha": "^2.1.3"
+  }
+}
