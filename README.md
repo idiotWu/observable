@@ -84,7 +84,7 @@ You can import `'dist/unique.js'` to get unique observer constructor.
 
 Register unique listener to specific property, you can add as many listeners as you want.
 
-** NOTICE: when apply unique listener to a property, any change on the property WILL NOT BE CAPTURED BY UNIVERSAL UPDATE LISTENERS!**
+**NOTICE: when apply unique listener to a property, any change on the property WILL NOT BE CAPTURED BY UNIVERSAL UPDATE LISTENERS!**
 
 ### unique#disunique( String:prop, Function:listener )
 
