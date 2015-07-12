@@ -1,11 +1,13 @@
 ## observable
 
+[![NPM](https://nodei.co/npm/observable.js.png)](https://nodei.co/npm/observable.js)
+
 A library provides you a way to listen changes on a object.
 
 ### Install
 
 ```
-npm install observable
+npm install observable.js
 ```
 
 ## Basical Usage

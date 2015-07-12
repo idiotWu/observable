@@ -1,6 +1,6 @@
 {
-  "name": "observable",
-  "version": "0.0.1",
+  "name": "observable.js",
+  "version": "0.0.2",
   "description": "Object.observe() like library",
   "main": "index.js",
   "scripts": {
