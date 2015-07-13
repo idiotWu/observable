@@ -37,6 +37,10 @@ let watchProp = (obj, prop, cb, value) => {
 
     value = value || obj[prop];
 
+    if (obj instanceof ObservableObject) {
+        obj.set(prop, value);
+    }
+
     let listeners = getListeners(obj, prop);
 
     if (!listeners) {

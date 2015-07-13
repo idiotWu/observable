@@ -62,6 +62,10 @@
 
         value = value || obj[prop];
 
+        if (obj instanceof _ObservableObject2['default']) {
+            obj.set(prop, value);
+        }
+
         var listeners = getListeners(obj, prop);
 
         if (!listeners) {
