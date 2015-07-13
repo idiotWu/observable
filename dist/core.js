@@ -29,14 +29,16 @@
          * @param {Array}    [accepts]: a list of acceptable changes
          */
 
-        function ObservableObject(obj, cb, accepts) {
+        function ObservableObject(obj, cb) {
+            if (obj === undefined) obj = {};
+
             var _this = this;
+
+            var accepts = arguments.length <= 2 || arguments[2] === undefined ? DEFAULT_ACCEPTS : arguments[2];
 
             _classCallCheck(this, ObservableObject);
 
-            obj = obj || {};
             cb = typeof cb === 'function' && cb;
-            accepts = accepts || DEFAULT_ACCEPTS;
 
             Object.keys(obj).forEach(function (prop) {
                 _this[prop] = obj[prop];
@@ -218,8 +220,8 @@
              * @param {Function}        cb: listener
              * @param {Array}    [accepts]: a list of acceptable changes
              */
-            value: function observe(cb, accepts) {
-                accepts = accepts || DEFAULT_ACCEPTS;
+            value: function observe(cb) {
+                var accepts = arguments.length <= 1 || arguments[1] === undefined ? DEFAULT_ACCEPTS : arguments[1];
 
                 if (typeof cb === 'function') {
                     if (ES7_OBSERVE) {

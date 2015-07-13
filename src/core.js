@@ -9,10 +9,8 @@ class ObservableObject {
      * @param {Function}      [cb]: changes listener
      * @param {Array}    [accepts]: a list of acceptable changes
      */
-    constructor(obj, cb, accepts) {
-        obj = obj || {};
+    constructor(obj = {}, cb, accepts = DEFAULT_ACCEPTS) {
         cb = typeof cb === 'function' && cb;
-        accepts = accepts || DEFAULT_ACCEPTS;
 
         Object.keys(obj).forEach((prop) => {
             this[prop] = obj[prop];
@@ -183,9 +181,7 @@ class ObservableObject {
      * @param {Function}        cb: listener
      * @param {Array}    [accepts]: a list of acceptable changes
      */
-    observe(cb, accepts) {
-        accepts = accepts || DEFAULT_ACCEPTS;
-
+    observe(cb, accepts = DEFAULT_ACCEPTS) {
         if (typeof cb === 'function') {
             if (ES7_OBSERVE) {
                 return ES7_OBSERVE(this, cb, accepts);
