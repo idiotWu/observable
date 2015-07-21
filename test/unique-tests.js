@@ -4,7 +4,7 @@ var expect = require('chai').expect;
 var Observable = require('../dist/unique');
 
 describe('======= UNIQUE OBSERVER TESTS ======', function() {
-    describe('add unique listener', function() {
+    describe('add unique listeners', function() {
         it('unique property should be captured only in unique listeners', function(done) {
             var observable = new Observable();
 
@@ -64,6 +64,29 @@ describe('======= UNIQUE OBSERVER TESTS ======', function() {
             });
 
             observable.set('unq', 1);
+        });
+
+        it('listeners should not be invoked when value isn\'t change', function(done) {
+            var observable = new Observable();
+            var finished = false;
+
+            observable.unique('unq', function(changes) {
+                if (finished) return;
+
+                finished = true;
+
+                if (observable.unq !== 10) {
+                   return done(new Error('value unchange but listener invoked'));
+                }
+
+                done();
+            }, 1);
+
+            observable.unq = 1;
+
+            setTimeout(function() {
+                observable.unq = 10;
+            });
         });
     });
 

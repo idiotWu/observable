@@ -61,6 +61,10 @@ let watchProp = (obj, prop, cb, value) => {
             return value;
         },
         set(newValue) {
+            if (newValue === value) {
+                return;
+            }
+
             let oldValue = value;
             value = newValue;
             let change = [{

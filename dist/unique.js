@@ -86,6 +86,10 @@
                 return value;
             },
             set: function set(newValue) {
+                if (newValue === value) {
+                    return;
+                }
+
                 var oldValue = value;
                 value = newValue;
                 var change = [{
