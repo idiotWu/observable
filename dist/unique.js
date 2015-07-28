@@ -48,22 +48,22 @@
     /**
      * @method
      * create observer for one property in any object
-     * @param {Object}   obj: target object
-     * @param {String}   prop: property name
-     * @param {Function} cb: changes' listener
-     * @param {*}        [value]: initial value for the property
+     * @param {Object}       obj: target object
+     * @param {String}      prop: property name
+     * @param {Function}    [cb]: changes' listener
+     * @param {*}     [oldValue]: initial value for the property
      */
-    var watchProp = function watchProp(obj, prop, cb, value) {
+    var watchProp = function watchProp(obj, prop, cb, oldValue) {
         var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
 
         if (descriptor && !descriptor.configurable) {
             return obj;
         }
 
-        value = value || obj[prop];
+        oldValue = oldValue || obj[prop];
 
-        if (obj instanceof _ObservableObject2['default']) {
-            obj.set(prop, value);
+        if (obj instanceof _ObservableObject2['default'] && !obj.hasOwnProperty(prop)) {
+            obj.set(prop, oldValue);
         }
 
         var listeners = getListeners(obj, prop);
@@ -83,26 +83,42 @@
 
         Object.defineProperty(obj, prop, {
             get: function get() {
-                return value;
+                if (this.hasOwnProperty(prop)) {
+                    return oldValue;
+                }
             },
             set: function set(newValue) {
-                if (newValue === value) {
+                if (newValue === oldValue) {
                     return;
                 }
 
-                var oldValue = value;
-                value = newValue;
+                if (!this.hasOwnProperty(prop)) {
+                    // redefine new value in instance
+                    Object.defineProperty(this, prop, {
+                        value: newValue,
+                        enumerable: true,
+                        writable: true,
+                        configurable: true
+                    });
+
+                    return newValue;
+                }
+
                 var change = [{
                     name: prop,
                     type: 'update',
                     object: obj,
                     oldValue: oldValue
                 }];
+
+                oldValue = newValue;
                 listeners.forEach(function (fn) {
                     setTimeout(function () {
                         return fn(change);
                     });
                 });
+
+                return newValue;
             },
             enumerable: true,
             configurable: true

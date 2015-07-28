@@ -33,7 +33,7 @@ listener function is invoked with an array of changes:
 > - `type`: A string indicating the type of change taking place. One of "add", "update", or "delete".
 > - `oldValue`: Only for "update" and "delete" types. The value before the change.
 
-### observable#add( String:prop, *:value )
+### observable#add( String:prop, Any:value )
 
 Add new property to the observable object, eg:
 
@@ -42,7 +42,7 @@ var obs = new Observable(); // {}
 obs.add('a', 1); // { a: 1 }
 ```
 
-### observable#update( String:prop, *:value )
+### observable#update( String:prop, Any:value )
 
 Update existed property value, eg:
 
@@ -60,7 +60,7 @@ var obs = new Observable({ a: 1 }); // { a: 1 }
 obs.delete('a'); // {}
 ```
 
-### observable#set( String:prop, *:value )
+### observable#set( String:prop, Any:value )
 
 Syntax suger for `obs#add` `obs#update`, this method will choose which one to use automatically, eg:
 
@@ -82,7 +82,7 @@ Remove listener from all listeners on this observable object.
 
 You can import `'dist/unique.js'` to get unique observer constructor.
 
-### unique#unique( String:prop, Function:listener, *value )
+### unique#unique( String:prop, Function:listener, Any:value )
 
 Register unique listener to specific property, you can add as many listeners as you want.
 
@@ -92,7 +92,7 @@ Register unique listener to specific property, you can add as many listeners as 
 
 Remove unique listener on specific property.
 
-### Unique.watch( Object:obj, String:prop, Function:listener, *value )
+### Unique.watch( Object:obj, String:prop, Function:listener, Any:value )
 
 An universal method of registering unique listener to any object.
 

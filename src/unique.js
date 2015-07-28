@@ -23,22 +23,22 @@ let getListeners = (obj, prop) => {
 /**
  * @method
  * create observer for one property in any object
- * @param {Object}   obj: target object
- * @param {String}   prop: property name
- * @param {Function} cb: changes' listener
- * @param {*}        [value]: initial value for the property
+ * @param {Object}       obj: target object
+ * @param {String}      prop: property name
+ * @param {Function}    [cb]: changes' listener
+ * @param {*}     [oldValue]: initial value for the property
  */
-let watchProp = (obj, prop, cb, value) => {
+let watchProp = (obj, prop, cb, oldValue) => {
     let descriptor = Object.getOwnPropertyDescriptor(obj, prop);
 
     if (descriptor && !descriptor.configurable) {
         return obj;
     }
 
-    value = value || obj[prop];
+    oldValue = oldValue || obj[prop];
 
-    if (obj instanceof ObservableObject) {
-        obj.set(prop, value);
+    if (obj instanceof ObservableObject && !obj.hasOwnProperty(prop)) {
+        obj.set(prop, oldValue);
     }
 
     let listeners = getListeners(obj, prop);
@@ -58,24 +58,40 @@ let watchProp = (obj, prop, cb, value) => {
 
     Object.defineProperty(obj, prop, {
         get() {
-            return value;
+            if (this.hasOwnProperty(prop)) {
+                return oldValue;
+            }
         },
         set(newValue) {
-            if (newValue === value) {
+            if (newValue === oldValue) {
                 return;
             }
 
-            let oldValue = value;
-            value = newValue;
+            if (!this.hasOwnProperty(prop)) {
+                // redefine new value in instance
+                Object.defineProperty(this, prop, {
+                    value: newValue,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                return newValue;
+            }
+
             let change = [{
                 name: prop,
                 type: 'update',
                 object: obj,
                 oldValue: oldValue
             }];
+
+            oldValue = newValue;
             listeners.forEach((fn) => {
                 setTimeout(() => fn(change));
             });
+
+            return newValue;
         },
         enumerable: true,
         configurable: true

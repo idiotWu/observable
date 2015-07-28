@@ -6,7 +6,10 @@ var Observable = require('../dist/unique');
 describe('======= UNIQUE OBSERVER TESTS ======', function() {
     describe('add unique listeners', function() {
         it('unique property should be captured only in unique listeners', function(done) {
-            var observable = new Observable();
+            var observable = new Observable({
+                a: 1,
+                unq: 1
+            });
 
             var uniqueListener = new Promise(function(resolve, reject) {
                 observable.unique('unq', function(changes) {
@@ -36,7 +39,7 @@ describe('======= UNIQUE OBSERVER TESTS ======', function() {
                 done();
             }).catch(done);
 
-            observable.set('a', 1);
+            observable.set('a', 2);
             observable.set('unq', 100);
         });
 
@@ -76,7 +79,7 @@ describe('======= UNIQUE OBSERVER TESTS ======', function() {
                 finished = true;
 
                 if (observable.unq !== 10) {
-                   return done(new Error('value unchange but listener invoked'));
+                    return done(new Error('value unchange but listener invoked'));
                 }
 
                 done();
@@ -182,6 +185,48 @@ describe('======= UNIQUE OBSERVER TESTS ======', function() {
 
                 obj_1.unq = 10;
             });
+        });
+    });
+
+    describe('observed object as prototype of other objects', function() {
+        it('instance own property should be individual from prototype', function() {
+            var proto = {
+                unq: 1
+            };
+
+            var instance = Object.create(proto);
+
+            Observable.watch(proto, 'unq');
+
+            instance.unq = 2;
+
+            expect(instance.unq, 'instance property hasn\'t been changed').to.equal(2);
+            expect(proto.unq, 'prototype property has been changed').to.equal(1);
+        });
+
+        it('instance own property should be mutable', function() {
+            var proto = {
+                unq: 1
+            };
+
+            var instance = Object.create(proto);
+
+            Observable.watch(proto, 'unq');
+
+            instance.unq = 2;
+            expect(instance.unq, 'instance property hasn\'t be inited with 2').to.equal(2);
+
+            instance.unq = 3;
+            expect(instance.unq, 'instance property hasn\'t be updated to 3').to.equal(3);
+
+            try {
+                Object.defineProperty(instance, 'unq', {
+                    value: 100
+                });
+            } catch (e) {
+                throw new Error('instance property isn\'t configurable');
+            }
+            expect(instance.unq, 'instance property hasn\'t be redefined as 100').to.equal(100);
         });
     });
 });

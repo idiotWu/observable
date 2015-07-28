@@ -192,15 +192,17 @@ describe('======= CORE TESTS ======', function() {
                 observable.set('a', 0);
             });
 
-            it('should no invoke any listener when value don\'t change', function (done) {
-                var observable = new Observable({ a: 1 });
+            it('should no invoke any listener when value don\'t change', function(done) {
+                var observable = new Observable({
+                    a: 1
+                });
 
-                observable.observe(function (changes) {
+                observable.observe(function(changes) {
                     try {
                         expect(changes.length).to.equal(1);
                         expect(changes[0].type).to.equal('delete');
                         expect(changes[0].oldValue).to.equal(1);
-                    } catch(e) {
+                    } catch (e) {
                         return done(e);
                     }
                     done();
@@ -320,6 +322,44 @@ describe('======= CORE TESTS ======', function() {
                 observable.unobserve(listener);
                 observable.set('a', 1);
             });
+        });
+    });
+
+    describe('observed object as prototype of other objects', function() {
+        it('instance own property should be individual from prototype', function() {
+            var proto = new Observable({
+                unq: 1
+            });
+
+            var instance = Object.create(proto);
+
+            instance.unq = 2;
+
+            expect(instance.unq, 'instance property hasn\'t been changed').to.equal(2);
+            expect(proto.unq, 'prototype property has been changed').to.equal(1);
+        });
+
+        it('instance own property should be mutable', function() {
+            var proto = new Observable({
+                unq: 1
+            });
+
+            var instance = Object.create(proto);
+
+            instance.unq = 2;
+            expect(instance.unq, 'instance property hasn\'t be inited with 2').to.equal(2);
+
+            instance.unq = 3;
+            expect(instance.unq, 'instance property hasn\'t be updated to 3').to.equal(3);
+
+            try {
+                Object.defineProperty(instance, 'unq', {
+                    value: 100
+                });
+            } catch (e) {
+                throw new Error('instance property isn\'t configurable');
+            }
+            expect(instance.unq, 'instance property hasn\'t be redefined as 100').to.equal(100);
         });
     });
 });
