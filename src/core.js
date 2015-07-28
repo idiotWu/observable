@@ -9,12 +9,14 @@ class ObservableObject {
      * @param {Function}      [cb]: changes listener
      * @param {Array}    [accepts]: a list of acceptable changes
      */
-    constructor(obj = {}, cb, accepts = DEFAULT_ACCEPTS) {
+    constructor(obj, cb, accepts = DEFAULT_ACCEPTS) {
         cb = typeof cb === 'function' && cb;
 
-        Object.keys(obj).forEach((prop) => {
-            this[prop] = obj[prop];
-        });
+        if (obj) {
+            Object.keys(obj).forEach((prop) => {
+                this[prop] = obj[prop];
+            });
+        }
 
         Object.defineProperties(this, {
             listeners: {

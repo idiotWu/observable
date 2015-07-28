@@ -1,7 +1,7 @@
 {
   "name": "observable.js",
   "main": "dist/core.js",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "homepage": "https://github.com/idiotWu/observable",
   "authors": [
     "Dolphin Wood <dolphin.w.e@gmail.com>"

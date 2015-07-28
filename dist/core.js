@@ -30,8 +30,6 @@
          */
 
         function ObservableObject(obj, cb) {
-            if (obj === undefined) obj = {};
-
             var _this = this;
 
             var accepts = arguments.length <= 2 || arguments[2] === undefined ? DEFAULT_ACCEPTS : arguments[2];
@@ -40,9 +38,11 @@
 
             cb = typeof cb === 'function' && cb;
 
-            Object.keys(obj).forEach(function (prop) {
-                _this[prop] = obj[prop];
-            });
+            if (obj) {
+                Object.keys(obj).forEach(function (prop) {
+                    _this[prop] = obj[prop];
+                });
+            }
 
             Object.defineProperties(this, {
                 listeners: {
