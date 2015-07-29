@@ -9,13 +9,18 @@ let watchers = [];
  *
  * @return {Object} watcher
  */
-let getWatcher = (obj, prop) => {
-    for (let watcher of watchers) {
-        if (watcher.object === obj && watcher.property === prop) {
-            return watcher;
-        }
-    }
-};
+ let getWatcher = (obj, prop) => {
+     let ret;
+
+     watchers.some(function(watcher) {
+         if (watcher.object === obj && watcher.property === prop) {
+             ret = watcher;
+             return true;
+         }
+     });
+
+     return ret;
+ };
 
 /**
  * @method

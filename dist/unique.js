@@ -35,32 +35,16 @@
      * @return {Object} watcher
      */
     var getWatcher = function getWatcher(obj, prop) {
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+        var ret = undefined;
 
-        try {
-            for (var _iterator = watchers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var watcher = _step.value;
+        watchers.some(function (watcher) {
+            if (watcher.object === obj && watcher.property === prop) {
+                ret = watcher;
+                return true;
+            }
+        });
 
-                if (watcher.object === obj && watcher.property === prop) {
-                    return watcher;
-                }
-            }
-        } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-        } finally {
-            try {
-                if (!_iteratorNormalCompletion && _iterator['return']) {
-                    _iterator['return']();
-                }
-            } finally {
-                if (_didIteratorError) {
-                    throw _iteratorError;
-                }
-            }
-        }
+        return ret;
     };
 
     /**
