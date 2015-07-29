@@ -1,23 +1,20 @@
 import ObservableObject from './core';
 
-let watches = [];
+let watchers = [];
 
 /**
- * get listeners
+ * get watcher
  * @param {Object} obj: object to be spied on
  * @param {String} prop: property to be spied on
+ *
+ * @return {Object} watcher
  */
-let getListeners = (obj, prop) => {
-    let listeners;
-
-    watches.some(function(watch) {
-        if (watch.object === obj && watch.property === prop) {
-            listeners = watch.listeners;
-            return true;
+let getWatcher = (obj, prop) => {
+    for (let watcher of watchers) {
+        if (watcher.object === obj && watcher.property === prop) {
+            return watcher;
         }
-    });
-
-    return listeners;
+    }
 };
 
 /**
@@ -26,7 +23,9 @@ let getListeners = (obj, prop) => {
  * @param {Object}       obj: target object
  * @param {String}      prop: property name
  * @param {Function}    [cb]: changes' listener
- * @param {*}     [oldValue]: initial value for the property
+ * @param {Any}   [oldValue]: initial value for the property
+ *
+ * @return {Object} target object
  */
 let watchProp = (obj, prop, cb, oldValue) => {
     let descriptor = Object.getOwnPropertyDescriptor(obj, prop);
@@ -35,32 +34,37 @@ let watchProp = (obj, prop, cb, oldValue) => {
         return obj;
     }
 
-    oldValue = oldValue || obj[prop];
-
-    if (obj instanceof ObservableObject && !obj.hasOwnProperty(prop)) {
-        obj.set(prop, oldValue);
+    if (oldValue === undefined) {
+        oldValue = obj[prop];
     }
 
-    let listeners = getListeners(obj, prop);
+    if (obj instanceof ObservableObject) {
+        obj.set(prop, oldValue);
+    } else {
+        obj[prop] = oldValue;
+    }
 
-    if (!listeners) {
-        listeners = [];
-        watches.push({
+    let watcher = getWatcher(obj, prop);
+
+    if (!watcher) {
+        watcher = {
             object: obj,
             property: prop,
-            listeners: listeners
-        });
+            listeners: [],
+            pending: {
+                changes: []
+            }
+        };
+        watchers.push(watcher);
     }
 
     if (typeof cb === 'function') {
-        listeners.push(cb);
+        watcher.listeners.push(cb);
     }
 
     Object.defineProperty(obj, prop, {
         get() {
-            if (this.hasOwnProperty(prop)) {
-                return oldValue;
-            }
+            return oldValue;
         },
         set(newValue) {
             if (newValue === oldValue) {
@@ -76,22 +80,29 @@ let watchProp = (obj, prop, cb, oldValue) => {
                     configurable: true
                 });
 
-                return newValue;
+                return;
             }
 
-            let change = [{
+            clearTimeout(watcher.pending.timer);
+
+            let all = watcher.pending.changes;
+            let change = {
                 name: prop,
                 type: 'update',
                 object: obj,
                 oldValue: oldValue
-            }];
+            };
 
             oldValue = newValue;
-            listeners.forEach((fn) => {
-                setTimeout(() => fn(change));
-            });
+            all.push(change);
 
-            return newValue;
+            watcher.pending.timer = setTimeout(() => {
+                watcher.listeners.forEach((fn) => {
+                    fn(all);
+                });
+
+                all.length = 0;
+            });
         },
         enumerable: true,
         configurable: true
@@ -105,31 +116,24 @@ let watchProp = (obj, prop, cb, oldValue) => {
  * @param {Object}  obj: target object
  * @param {String} prop: property name
  * @param {Function} cb: listener to be remove
+ *
+ * @return {Object} target object
  */
 let unwatchProp = (obj, prop, cb) => {
-    let listeners = getListeners(obj, prop);
+    let watcher = getWatcher(obj, prop);
 
-    if (!listeners) return;
+    if (!watcher) {
+        return obj;
+    }
 
-    listeners.some((listener, index, listeners) => {
-        return listener === cb && listeners.splice(index, 1);
+    watcher.listeners.some((listener, index, all) => {
+        return listener === cb && all.splice(index, 1);
     });
 
     return obj;
 };
 
 class UniqueObserver extends ObservableObject {
-    /**
-     * @method
-     * create specific listener for one property
-     * NOTICE: when apply unique listener to a property,
-     *         any change on the property WILL NOT BE
-     *         CAPTURED BY UNIVERSAL UPDATE LISTENERS!
-     *
-     * @param {String}       prop: target property name
-     * @param {Function} listener: changes' listener
-     * @param {*}         [value]: initial value for the property
-     */
     unique(prop, listener, value) {
         return watchProp(this, prop, listener, value);
     }

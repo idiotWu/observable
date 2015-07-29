@@ -25,24 +25,42 @@
 
     var _ObservableObject2 = _interopRequireDefault(_core);
 
-    var watches = [];
+    var watchers = [];
 
     /**
-     * get listeners
+     * get watcher
      * @param {Object} obj: object to be spied on
      * @param {String} prop: property to be spied on
+     *
+     * @return {Object} watcher
      */
-    var getListeners = function getListeners(obj, prop) {
-        var listeners = undefined;
+    var getWatcher = function getWatcher(obj, prop) {
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-        watches.some(function (watch) {
-            if (watch.object === obj && watch.property === prop) {
-                listeners = watch.listeners;
-                return true;
+        try {
+            for (var _iterator = watchers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var watcher = _step.value;
+
+                if (watcher.object === obj && watcher.property === prop) {
+                    return watcher;
+                }
             }
-        });
-
-        return listeners;
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator['return']) {
+                    _iterator['return']();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
     };
 
     /**
@@ -51,7 +69,9 @@
      * @param {Object}       obj: target object
      * @param {String}      prop: property name
      * @param {Function}    [cb]: changes' listener
-     * @param {*}     [oldValue]: initial value for the property
+     * @param {Any}   [oldValue]: initial value for the property
+     *
+     * @return {Object} target object
      */
     var watchProp = function watchProp(obj, prop, cb, oldValue) {
         var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
@@ -60,32 +80,37 @@
             return obj;
         }
 
-        oldValue = oldValue || obj[prop];
-
-        if (obj instanceof _ObservableObject2['default'] && !obj.hasOwnProperty(prop)) {
-            obj.set(prop, oldValue);
+        if (oldValue === undefined) {
+            oldValue = obj[prop];
         }
 
-        var listeners = getListeners(obj, prop);
+        if (obj instanceof _ObservableObject2['default']) {
+            obj.set(prop, oldValue);
+        } else {
+            obj[prop] = oldValue;
+        }
 
-        if (!listeners) {
-            listeners = [];
-            watches.push({
+        var watcher = getWatcher(obj, prop);
+
+        if (!watcher) {
+            watcher = {
                 object: obj,
                 property: prop,
-                listeners: listeners
-            });
+                listeners: [],
+                pending: {
+                    changes: []
+                }
+            };
+            watchers.push(watcher);
         }
 
         if (typeof cb === 'function') {
-            listeners.push(cb);
+            watcher.listeners.push(cb);
         }
 
         Object.defineProperty(obj, prop, {
             get: function get() {
-                if (this.hasOwnProperty(prop)) {
-                    return oldValue;
-                }
+                return oldValue;
             },
             set: function set(newValue) {
                 if (newValue === oldValue) {
@@ -101,24 +126,29 @@
                         configurable: true
                     });
 
-                    return newValue;
+                    return;
                 }
 
-                var change = [{
+                clearTimeout(watcher.pending.timer);
+
+                var all = watcher.pending.changes;
+                var change = {
                     name: prop,
                     type: 'update',
                     object: obj,
                     oldValue: oldValue
-                }];
+                };
 
                 oldValue = newValue;
-                listeners.forEach(function (fn) {
-                    setTimeout(function () {
-                        return fn(change);
-                    });
-                });
+                all.push(change);
 
-                return newValue;
+                watcher.pending.timer = setTimeout(function () {
+                    watcher.listeners.forEach(function (fn) {
+                        fn(all);
+                    });
+
+                    all.length = 0;
+                });
             },
             enumerable: true,
             configurable: true
@@ -132,14 +162,18 @@
      * @param {Object}  obj: target object
      * @param {String} prop: property name
      * @param {Function} cb: listener to be remove
+     *
+     * @return {Object} target object
      */
     var unwatchProp = function unwatchProp(obj, prop, cb) {
-        var listeners = getListeners(obj, prop);
+        var watcher = getWatcher(obj, prop);
 
-        if (!listeners) return;
+        if (!watcher) {
+            return obj;
+        }
 
-        listeners.some(function (listener, index, listeners) {
-            return listener === cb && listeners.splice(index, 1);
+        watcher.listeners.some(function (listener, index, all) {
+            return listener === cb && all.splice(index, 1);
         });
 
         return obj;
@@ -156,18 +190,6 @@
 
         _createClass(UniqueObserver, [{
             key: 'unique',
-
-            /**
-             * @method
-             * create specific listener for one property
-             * NOTICE: when apply unique listener to a property,
-             *         any change on the property WILL NOT BE
-             *         CAPTURED BY UNIVERSAL UPDATE LISTENERS!
-             *
-             * @param {String}       prop: target property name
-             * @param {Function} listener: changes' listener
-             * @param {*}         [value]: initial value for the property
-             */
             value: function unique(prop, listener, value) {
                 return watchProp(this, prop, listener, value);
             }

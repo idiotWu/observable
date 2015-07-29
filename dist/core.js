@@ -27,6 +27,8 @@
          * @param {Object}       [obj]: initial object
          * @param {Function}      [cb]: changes listener
          * @param {Array}    [accepts]: a list of acceptable changes
+         *
+         * @return {Object} this
          */
 
         function ObservableObject(obj, cb) {
@@ -45,13 +47,13 @@
             }
 
             Object.defineProperties(this, {
-                listeners: {
+                __listeners: {
                     value: [],
                     writable: true,
                     enumerable: false,
                     configurable: false
                 },
-                pending: {
+                __pending: {
                     value: {
                         changes: []
                     },
@@ -66,7 +68,7 @@
                     return ES7_OBSERVE(this, cb, accepts);
                 }
 
-                this.listeners.push({
+                this.__listeners.push({
                     fn: cb,
                     accepts: accepts
                 });
@@ -76,70 +78,60 @@
         }
 
         _createClass(ObservableObject, [{
-            key: 'makeChanges',
+            key: '__makeChanges',
 
             /**
              * @method
              * send changes to listener async
-             * @param {Array | String}     props: changed properties
-             * @param {Array | String}     types: changes types
-             * @param {Array | *}      oldValues: old values
+             * @param {String}             prop: changed property
+             * @param {String}             type: changes type
+             * @param {Any}            oldValue: old value
+             *
+             * @return {Object} this
              */
-            value: function makeChanges(props, types, oldValues) {
+            value: function __makeChanges(prop, type, oldValue) {
                 var _this2 = this;
 
-                if (ES7_OBSERVE) {
+                if (ES7_OBSERVE || !this.__listeners.length) {
                     return this;
                 }
 
-                clearTimeout(this.pending.timer);
+                var descriptor = Object.getOwnPropertyDescriptor(this, prop);
 
-                props = [].concat(props);
-                types = [].concat(types);
-                oldValues = [].concat(oldValues);
+                if (descriptor && (descriptor.hasOwnProperty('set') || descriptor.hasOwnProperty('get'))) {
+                    return this;
+                }
 
-                var changes = this.pending.changes;
+                clearTimeout(this.__pending.timer);
 
-                props.forEach(function (prop, index) {
-                    var descriptor = Object.getOwnPropertyDescriptor(_this2, prop);
+                var all = this.__pending.changes;
+                var change = {
+                    name: prop,
+                    type: type,
+                    object: this
+                };
 
-                    if (descriptor && (descriptor.hasOwnProperty('set') || descriptor.hasOwnProperty('get'))) {
-                        return;
-                    }
+                if (type.match(/update|delete/)) {
+                    change.oldValue = oldValue;
+                }
 
-                    var type = types[index];
-                    var change = {
-                        name: prop,
-                        type: type,
-                        object: _this2
-                    };
+                all.push(change);
 
-                    if (type === 'update' || type === 'delete') {
-                        change.oldValue = oldValues[index];
-                    }
-
-                    changes.push(change);
-                });
-
-                this.pending.timer = setTimeout(function () {
-                    if (!changes.length) return;
-
-                    _this2.listeners.forEach(function (listener) {
+                this.__pending.timer = setTimeout(function () {
+                    _this2.__listeners.forEach(function (listener) {
                         var accepts = listener.accepts;
 
-                        var acceptChanges = changes.filter(function (change) {
-                            return accepts.indexOf(change.type) !== -1;
+                        var acceptChanges = all.filter(function (ch) {
+                            return accepts.indexOf(ch.type) !== -1;
                         });
 
                         if (!acceptChanges.length) return;
 
-                        setTimeout(function () {
-                            return listener.fn(acceptChanges);
-                        });
+                        listener.fn(acceptChanges);
                     });
 
                     // some cleaning
-                    _this2.pending.changes.length = 0;
+                    all.length = 0;
                 });
 
                 return this;
@@ -151,7 +143,9 @@
              * @method
              * add new property to observable object
              * @param {String}  prop: property name to be add
-             * @param {*}      value: property value
+             * @param {Any}    value: property value
+             *
+             * @return {Object} this
              */
             value: function add(prop, value) {
                 if (this.hasOwnProperty(prop)) {
@@ -160,7 +154,7 @@
 
                 this[prop] = value;
 
-                return this.makeChanges(prop, 'add');
+                return this.__makeChanges(prop, 'add');
             }
         }, {
             key: 'update',
@@ -169,7 +163,9 @@
              * @method
              * update property value
              * @param {String} prop
-             * @param {*}      newValue
+             * @param {Any}    newValue
+             *
+             * @return {Object} this
              */
             value: function update(prop, newValue) {
                 if (!this.hasOwnProperty(prop)) {
@@ -184,7 +180,7 @@
 
                 this[prop] = newValue;
 
-                return this.makeChanges(prop, 'update', oldValue);
+                return this.__makeChanges(prop, 'update', oldValue);
             }
         }, {
             key: 'set',
@@ -193,7 +189,9 @@
              * @method
              * syntax sugar for instance.add | instance.update
              * @param {String} prop
-             * @param {*}      value
+             * @param {Any}    value
+             *
+             * @return {Object} this
              */
             value: function set(prop, value) {
                 return this.add(prop, value);
@@ -205,11 +203,13 @@
              * @method
              * delete property
              * @param {String} prop
+             *
+             * @return {Object} this
              */
             value: function _delete(prop) {
                 var oldValue = this[prop];
 
-                return delete this[prop] ? this.makeChanges(prop, 'delete', oldValue) : this;
+                return delete this[prop] ? this.__makeChanges(prop, 'delete', oldValue) : this;
             }
         }, {
             key: 'observe',
@@ -219,6 +219,8 @@
              * add new observe listener
              * @param {Function}        cb: listener
              * @param {Array}    [accepts]: a list of acceptable changes
+             *
+             * @return {Object} this
              */
             value: function observe(cb) {
                 var accepts = arguments.length <= 1 || arguments[1] === undefined ? DEFAULT_ACCEPTS : arguments[1];
@@ -228,7 +230,7 @@
                         return ES7_OBSERVE(this, cb, accepts);
                     }
 
-                    this.listeners.push({
+                    this.__listeners.push({
                         fn: cb,
                         accepts: accepts
                     });
@@ -243,13 +245,15 @@
              * @method
              * remove observe listener
              * @param {Function} cb
+             *
+             * @return {Object} this
              */
             value: function unobserve(cb) {
                 if (ES7_OBSERVE) {
                     return Object.unobserve(this, cb);
                 }
 
-                this.listeners.some(function (listener, index, listeners) {
+                this.__listeners.some(function (listener, index, listeners) {
                     return listener.fn === cb && listeners.splice(index, 1);
                 });
 

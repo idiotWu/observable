@@ -8,6 +8,8 @@ class ObservableObject {
      * @param {Object}       [obj]: initial object
      * @param {Function}      [cb]: changes listener
      * @param {Array}    [accepts]: a list of acceptable changes
+     *
+     * @return {Object} this
      */
     constructor(obj, cb, accepts = DEFAULT_ACCEPTS) {
         cb = typeof cb === 'function' && cb;
@@ -19,13 +21,13 @@ class ObservableObject {
         }
 
         Object.defineProperties(this, {
-            listeners: {
+            __listeners: {
                 value: [],
                 writable: true,
                 enumerable: false,
                 configurable: false
             },
-            pending: {
+            __pending: {
                 value: {
                     changes: []
                 },
@@ -40,7 +42,7 @@ class ObservableObject {
                 return ES7_OBSERVE(this, cb, accepts);
             }
 
-            this.listeners.push({
+            this.__listeners.push({
                 fn: cb,
                 accepts: accepts
             });
@@ -52,66 +54,58 @@ class ObservableObject {
     /**
      * @method
      * send changes to listener async
-     * @param {Array | String}     props: changed properties
-     * @param {Array | String}     types: changes types
-     * @param {Array | *}      oldValues: old values
+     * @param {String}             prop: changed property
+     * @param {String}             type: changes type
+     * @param {Any}            oldValue: old value
+     *
+     * @return {Object} this
      */
-    makeChanges(props, types, oldValues) {
-        if (ES7_OBSERVE) {
+    __makeChanges(prop, type, oldValue) {
+        if (ES7_OBSERVE || !this.__listeners.length) {
             return this;
         }
 
-        clearTimeout(this.pending.timer);
+        let descriptor = Object.getOwnPropertyDescriptor(this, prop);
 
-        props = [].concat(props);
-        types = [].concat(types);
-        oldValues = [].concat(oldValues);
+        if (descriptor &&
+            (
+                descriptor.hasOwnProperty('set') ||
+                descriptor.hasOwnProperty('get')
+            )
+        ) {
+            return this;
+        }
 
-        let changes = this.pending.changes;
+        clearTimeout(this.__pending.timer);
 
-        props.forEach((prop, index) => {
-            let descriptor = Object.getOwnPropertyDescriptor(this, prop);
+        let all = this.__pending.changes;
+        let change = {
+            name: prop,
+            type: type,
+            object: this
+        };
 
-            if (descriptor &&
-                (
-                    descriptor.hasOwnProperty('set') ||
-                    descriptor.hasOwnProperty('get')
-                )
-            ) {
-                return;
-            }
+        if (type.match(/update|delete/)) {
+            change.oldValue = oldValue;
+        }
 
-            let type = types[index];
-            let change = {
-                name: prop,
-                type: type,
-                object: this
-            };
+        all.push(change);
 
-            if (type === 'update' || type === 'delete') {
-                change.oldValue = oldValues[index];
-            }
-
-            changes.push(change);
-        });
-
-        this.pending.timer = setTimeout(() => {
-            if (!changes.length) return;
-
-            this.listeners.forEach((listener) => {
+        this.__pending.timer = setTimeout(() => {
+            this.__listeners.forEach((listener) => {
                 let accepts = listener.accepts;
 
-                let acceptChanges = changes.filter((change) => {
-                    return accepts.indexOf(change.type) !== -1;
+                let acceptChanges = all.filter((ch) => {
+                    return accepts.indexOf(ch.type) !== -1;
                 });
 
                 if (!acceptChanges.length) return;
 
-                setTimeout(() => listener.fn(acceptChanges));
+                listener.fn(acceptChanges);
             });
 
             // some cleaning
-            this.pending.changes.length = 0;
+            all.length = 0;
         });
 
         return this;
@@ -121,7 +115,9 @@ class ObservableObject {
      * @method
      * add new property to observable object
      * @param {String}  prop: property name to be add
-     * @param {*}      value: property value
+     * @param {Any}    value: property value
+     *
+     * @return {Object} this
      */
     add(prop, value) {
         if (this.hasOwnProperty(prop)) {
@@ -130,14 +126,16 @@ class ObservableObject {
 
         this[prop] = value;
 
-        return this.makeChanges(prop, 'add');
+        return this.__makeChanges(prop, 'add');
     }
 
     /**
      * @method
      * update property value
      * @param {String} prop
-     * @param {*}      newValue
+     * @param {Any}    newValue
+     *
+     * @return {Object} this
      */
     update(prop, newValue) {
         if (!this.hasOwnProperty(prop)) {
@@ -152,14 +150,16 @@ class ObservableObject {
 
         this[prop] = newValue;
 
-        return this.makeChanges(prop, 'update', oldValue);
+        return this.__makeChanges(prop, 'update', oldValue);
     }
 
     /**
      * @method
      * syntax sugar for instance.add | instance.update
      * @param {String} prop
-     * @param {*}      value
+     * @param {Any}    value
+     *
+     * @return {Object} this
      */
     set(prop, value) {
         return this.add(prop, value);
@@ -169,12 +169,14 @@ class ObservableObject {
      * @method
      * delete property
      * @param {String} prop
+     *
+     * @return {Object} this
      */
     delete(prop) {
         let oldValue = this[prop];
 
         return delete this[prop] ?
-            this.makeChanges(prop, 'delete', oldValue) : this;
+            this.__makeChanges(prop, 'delete', oldValue) : this;
     }
 
     /**
@@ -182,6 +184,8 @@ class ObservableObject {
      * add new observe listener
      * @param {Function}        cb: listener
      * @param {Array}    [accepts]: a list of acceptable changes
+     *
+     * @return {Object} this
      */
     observe(cb, accepts = DEFAULT_ACCEPTS) {
         if (typeof cb === 'function') {
@@ -189,7 +193,7 @@ class ObservableObject {
                 return ES7_OBSERVE(this, cb, accepts);
             }
 
-            this.listeners.push({
+            this.__listeners.push({
                 fn: cb,
                 accepts: accepts
             });
@@ -202,13 +206,15 @@ class ObservableObject {
      * @method
      * remove observe listener
      * @param {Function} cb
+     *
+     * @return {Object} this
      */
     unobserve(cb) {
         if (ES7_OBSERVE) {
             return Object.unobserve(this, cb);
         }
 
-        this.listeners.some((listener, index, listeners) => {
+        this.__listeners.some((listener, index, listeners) => {
             return listener.fn === cb && listeners.splice(index, 1);
         });
 

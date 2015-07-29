@@ -3,6 +3,7 @@
 var gulp = require('gulp');
 var babel = require('gulp-babel');
 var mocha = require('gulp-mocha');
+var eslint = require('gulp-eslint');
 
 var SOURCE = 'src/*.js';
 
@@ -24,8 +25,15 @@ gulp.task('test:unique', function() {
         .pipe(mocha());
 });
 
-gulp.task('default', ['compile'], function() {
-    gulp.watch(SOURCE, ['compile']);
+gulp.task('lint', function() {
+    return gulp.src(SOURCE)
+        .pipe(eslint())
+        .pipe(eslint.format())
+        .pipe(eslint.failOnError());
+});
+
+gulp.task('default', ['lint', 'compile'], function() {
+    gulp.watch(SOURCE, ['lint', 'compile']);
 
     gulp.watch(['dist/core.js', 'test/core-tests.js'], ['test:core']);
     gulp.watch(['dist/unique.js', 'test/unique-tests.js'], ['test:unique']);

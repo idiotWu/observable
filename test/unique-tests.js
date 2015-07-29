@@ -6,10 +6,7 @@ var Observable = require('../dist/unique');
 describe('======= UNIQUE OBSERVER TESTS ======', function() {
     describe('add unique listeners', function() {
         it('unique property should be captured only in unique listeners', function(done) {
-            var observable = new Observable({
-                a: 1,
-                unq: 1
-            });
+            var observable = new Observable();
 
             var uniqueListener = new Promise(function(resolve, reject) {
                 observable.unique('unq', function(changes) {
@@ -79,17 +76,31 @@ describe('======= UNIQUE OBSERVER TESTS ======', function() {
                 finished = true;
 
                 if (observable.unq !== 10) {
-                    return done(new Error('value unchange but listener invoked'));
+                    return done(new Error('value unchange but listener is invoked'));
                 }
 
                 done();
             }, 1);
 
             observable.unq = 1;
+            observable.unq = 10;
+        });
 
-            setTimeout(function() {
-                observable.unq = 10;
+        it('three changes at once should be handlered together', function(done) {
+            var observable = new Observable();
+
+            observable.unique('unq', function(changes) {
+                try {
+                    expect(changes.length).to.equal(3);
+                } catch (e) {
+                    return done(e);
+                }
+                done();
             });
+
+            observable.unq = 1;
+            observable.unq = 2;
+            observable.unq = 3;
         });
     });
 

@@ -1,6 +1,6 @@
 {
   "name": "observable.js",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Object.observe() like library",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "chai": "^3.0.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^5.1.0",
+    "gulp-eslint": "^0.15.0",
     "gulp-mocha": "^2.1.3"
   }
 }
