@@ -1,4 +1,4 @@
-## observable.js [![Build Status][travis-image]][travis-url]
+## observable.js [![Build Status](https://travis-ci.org/idiotWu/observable.svg?branch=master)](https://travis-ci.org/idiotWu/observable)
 
 [![NPM](https://nodei.co/npm/observable.js.png)](https://nodei.co/npm/observable.js)
 
