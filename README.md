@@ -1,4 +1,4 @@
-## observable
+## observable.js [![Build Status][travis-image]][travis-url]
 
 [![NPM](https://nodei.co/npm/observable.js.png)](https://nodei.co/npm/observable.js)
 
