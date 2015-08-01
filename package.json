@@ -1,7 +1,7 @@
 {
   "name": "observable.js",
-  "version": "0.0.10",
-  "description": "Object.observe() like library",
+  "version": "0.1.0",
+  "description": "A library provides you a way to listen changes on a object.",
   "main": "index.js",
   "files": [
     "dist",
@@ -42,6 +42,6 @@
   },
   "dependencies": {
     "babel-runtime": "^5.8.20",
-    "core-decorators": "^0.1.5"
+    "core-decorators": "^0.2.0"
   }
 }

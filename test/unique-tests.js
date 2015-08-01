@@ -2,7 +2,7 @@
 
 var Promise = require('promise');
 var expect = require('chai').expect;
-var Observable = require('../index').Unique;
+var Observable = require('../index').UniqueObserver;
 
 describe('======= UNIQUE OBSERVER TESTS ======', function() {
     describe('add unique listeners', function() {

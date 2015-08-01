@@ -1,4 +1,4 @@
 'use strict';
 
-module.exports = exports = require('./dist/core');
-exports.Unique = require('./dist/unique');
+exports.Observable = require('./dist/core');
+exports.UniqueObserver = require('./dist/unique');

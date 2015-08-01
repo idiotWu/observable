@@ -1,7 +1,7 @@
 'use strict';
 
 var expect = require('chai').expect;
-var Observable = require('../index');
+var Observable = require('../index').Observable;
 
 describe('======= CORE TESTS ======', function() {
     describe('init observable', function() {

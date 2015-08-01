@@ -2,7 +2,9 @@
 
 [![NPM](https://nodei.co/npm/observable.js.png)](https://nodei.co/npm/observable.js)
 
-A library provides you a way to listen changes on a object.
+[Object.observe](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/observe) is great, but it's hard to create a polyfill for the method.
+
+MaxArt2501 has started a [polyfill](https://github.com/MaxArt2501/object-observe) but, actually I don't like dirty checking. So I create this repo to provide you another way to capture any change on an object.
 
 ### Install
 
@@ -10,35 +12,60 @@ A library provides you a way to listen changes on a object.
 npm install observable.js
 ```
 
+## How it works
+
+As MaxArt2501 has explained [here](https://github.com/MaxArt2501/object-observe/blob/master/doc/index.md#under-the-hood), we have no way to emulate this method other than dirty checking. **Instead of modifying object directly, we use some methods as proxy functions(we call them `modifiers`) to make changes and invoke listeners.**
+
+If you are not annoyed by `Pub/Sub` model, welcome to the conversation :)
+
 ## Basical Usage
 
 ```javascript
-var Observable = require('observable.js');
+import { Observable } from 'observable.js';
+// or require('observable.js').Observable
 
-var obs = new Observable(object, listener, accepts);
+let obs = new Observable(object, listener, accepts);
 ```
 
 The above code will create an observable object `obs`, here's the explanation of three parameters:
 
-1. `object`: `Object, optional`. Initial object, all the properties will be copied to observable object
+1. `object`: Object, optional. Initial object, all the properties will be assigned to the observable instance
 2. `listener`: `Function, optional`. Observer listener for the changes
 3. `accepts`: `Array, optional`. Accepts list of changes, refer to [Object.observe](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/observe)
 
-listener function is invoked with an array of changes:
+listener function is invoked with an array of changes(same as native `Object.observe`):
 
-> `changes`: An array of objects each representing a change. The properties of these change objects are:
->
-> - `name`: The name of the property which was changed.
-> - `object`: The changed object after the change was made.
-> - `type`: A string indicating the type of change taking place. One of "add", "update", or "delete".
-> - `oldValue`: Only for "update" and "delete" types. The value before the change.
+`changes`: An array of objects each representing a change. The properties of these change objects are:
+
+- `name`: The name of the property which was changed.
+- `object`: The changed object after the change was made.
+- `type`: A string indicating the type of change taking place. One of "add", "update", or "delete".
+- `oldValue`: Only for "update" and "delete" types. The value before the change.
+
+eg:
+
+```javascript
+let obs = new Observable({ a:1 }, (changes) => {
+    console.log(changes);
+});
+
+obs.set('a', 2);
+// changes: [{
+//    name: 'a',
+//    object: { a: 2 },
+//    type: 'update',
+//    oldValue: 1
+// }]
+```
+
+## Modifiers
 
 ### observable#add( String:prop, Any:value )
 
 Add new property to the observable object, eg:
 
 ```javascript
-var obs = new Observable(); // {}
+let obs = new Observable(); // {}
 obs.add('a', 1); // { a: 1 }
 ```
 
@@ -47,7 +74,7 @@ obs.add('a', 1); // { a: 1 }
 Update existed property value, eg:
 
 ```javascript
-var obs = new Observable({ a: 1 }); // { a: 1 }
+let obs = new Observable({ a: 1 }); // { a: 1 }
 obs.update('a', 2); // { a: 2 }
 ```
 
@@ -56,7 +83,7 @@ obs.update('a', 2); // { a: 2 }
 Delete property from object, eg:
 
 ```javascript
-var obs = new Observable({ a: 1 }); // { a: 1 }
+let obs = new Observable({ a: 1 }); // { a: 1 }
 obs.delete('a'); // {}
 ```
 
@@ -65,7 +92,7 @@ obs.delete('a'); // {}
 Syntax suger for `obs#add` `obs#update`, this method will choose which one to use automatically, eg:
 
 ```javascript
-var obs = new Observable(); // {}
+let obs = new Observable(); // {}
 obs.set('a', 1); // add: { a: 1 }
 obs.set('a', 2); // update: { a: 2 }
 ```
@@ -80,13 +107,40 @@ Remove listener from all listeners on this observable object.
 
 ## Unique Observer
 
-You can import `'dist/unique.js'` to get unique observer constructor.
+We also provide you a way to listen changes on single property by import `UniqueObsever`:
+
+```javascript
+import { UniqueObsever } from 'observable.js';
+// or require('observable.js').UniqueObsever
+```
+
+### How it works
+
+Unique observer is a sub class of `Observable` and accessing property through [`getter`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) and [`setter`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set). **Now you can modify the property directly like `obj.a = 1` or `delete obj.a`.**
 
 ### unique#unique( String:prop, Function:listener, Any:value )
 
 Register unique listener to specific property, you can add as many listeners as you want.
 
-**NOTICE: when apply unique listener to a property, any change on the property WILL NOT BE CAPTURED BY UNIVERSAL UPDATE LISTENERS!**
+eg:
+
+```javascript
+let unq = new UniqueObsever();
+
+unq.unique('a', (changes) => {
+    console.log(changes);
+});
+
+unq.a = 2;
+// changes: [{
+//    name: 'a',
+//    object: { a: 2 },
+//    type: 'update',
+//    oldValue: undefined
+// }]
+```
+
+**NOTICE: when apply unique listener to a property, any change on the property WILL NOT BE CAPTURED BY LISTENERS REGIESTERED ON `Observable`!**
 
 ### unique#disunique( String:prop, Function:listener )
 
@@ -96,14 +150,36 @@ Remove unique listener on specific property.
 
 An universal method of registering unique listener to any object.
 
+eg:
+
+```javascript
+let obj = {
+    a: 1
+};
+
+UniqueObsever.watch(obj, 'a', (changes) => {
+    console.log(changes);
+});
+
+obj.a = 2;
+// changes: [{
+//    name: 'a',
+//    object: { a: 2 },
+//    type: 'update',
+//    oldValue: 1
+// }]
+```
+
 ### Unique.unwatch( Object:obj, String:prop, Function:listener )
 
 An universal method of removing unique listener on any object.
 
-## Use in browser
+## Limitations
 
-Code is compiled to `umd` modules with [Babel](https://babeljs.io/), you can use `amd` loader like [RequireJS](http://requirejs.org/) to use it.
+1. Only changes made through `obs#add`, `obs#update`, `obs#set`, `obs#delete` will be captured
+2. Don't support change types of "reconfigure", "setPrototype" or "preventExtensions"
+3. Source code has transpiled with babel, meanwhile, some polyfills are included too. If you don't need these polyfills, please import `'observable.js/src/*'` instead.
 
-## LICENSE
+## License
 
 MIT.
