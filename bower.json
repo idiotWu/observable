@@ -6,7 +6,7 @@
   "authors": [
     "Dolphin Wood <dolphin.w.e@gmail.com>"
   ],
-  "description": "A library provides you a way to listen changes on a object.",
+  "description": "A library provides you a way to listen changes on an object.",
   "moduleType": [
     "es6"
   ],
