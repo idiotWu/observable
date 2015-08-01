@@ -1,6 +1,6 @@
 {
   "name": "observable.js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A library provides you a way to listen changes on a object.",
   "main": "index.js",
   "files": [
