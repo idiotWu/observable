@@ -10,7 +10,11 @@ var SOURCE = 'src/*.js';
 gulp.task('compile', function() {
     return gulp.src(SOURCE)
         .pipe(babel({
-            optional: ['runtime']
+            optional: [
+                'runtime',
+                'es7.decorators',
+                'es7.objectRestSpread'
+            ]
         }))
         .pipe(gulp.dest('dist'));
 });
@@ -28,8 +32,7 @@ gulp.task('test:unique', function() {
 gulp.task('lint', function() {
     return gulp.src(SOURCE)
         .pipe(eslint())
-        .pipe(eslint.format())
-        .pipe(eslint.failOnError());
+        .pipe(eslint.format());
 });
 
 gulp.task('default', ['lint', 'compile'], function() {

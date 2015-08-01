@@ -1,6 +1,6 @@
 'use strict';
 
-var _createClass = require('babel-runtime/helpers/create-class')['default'];
+var _createDecoratedClass = require('babel-runtime/helpers/create-decorated-class')['default'];
 
 var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
 
@@ -13,6 +13,9 @@ var _Object$getOwnPropertyDescriptor = require('babel-runtime/core-js/object/get
 Object.defineProperty(exports, '__esModule', {
     value: true
 });
+
+var _coreDecorators = require('core-decorators');
+
 var ES7_OBSERVE = typeof Object.observe === 'function' && Object.observe;
 // const ES7_OBSERVE = false;
 var DEFAULT_ACCEPTS = ['add', 'update', 'delete'];
@@ -65,18 +68,19 @@ var ObservableObject = (function () {
         return this;
     }
 
-    _createClass(ObservableObject, [{
-        key: '__makeChanges',
+    /**
+     * @method
+     * send changes to listener async
+     * @param {String}             prop: changed property
+     * @param {String}             type: changes type
+     * @param {Any}            oldValue: old value
+     *
+     * @return {Object} this
+     */
 
-        /**
-         * @method
-         * send changes to listener async
-         * @param {String}             prop: changed property
-         * @param {String}             type: changes type
-         * @param {Any}            oldValue: old value
-         *
-         * @return {Object} this
-         */
+    _createDecoratedClass(ObservableObject, [{
+        key: '__makeChanges',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function __makeChanges(prop, type, oldValue) {
             var _this = this;
 
@@ -124,8 +128,6 @@ var ObservableObject = (function () {
 
             return this;
         }
-    }, {
-        key: 'add',
 
         /**
          * @method
@@ -135,6 +137,10 @@ var ObservableObject = (function () {
          * @param {String}  prop: property name to be add
          * @param {Any}    value: property value
          */
+
+    }, {
+        key: 'add',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function add(prop, value) {
             if (this.hasOwnProperty(prop)) {
                 return this.update(prop, value);
@@ -144,8 +150,6 @@ var ObservableObject = (function () {
 
             return this.__makeChanges(prop, 'add');
         }
-    }, {
-        key: 'update',
 
         /**
          * @method
@@ -155,6 +159,10 @@ var ObservableObject = (function () {
          * @param {String} prop
          * @param {Any}    newValue
          */
+
+    }, {
+        key: 'update',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function update(prop, newValue) {
             if (!this.hasOwnProperty(prop)) {
                 return this.add(prop, newValue);
@@ -170,8 +178,6 @@ var ObservableObject = (function () {
 
             return this.__makeChanges(prop, 'update', oldValue);
         }
-    }, {
-        key: 'set',
 
         /**
          * @method
@@ -181,11 +187,13 @@ var ObservableObject = (function () {
          * @param {String} prop
          * @param {Any}    value
          */
+
+    }, {
+        key: 'set',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function set(prop, value) {
             return this.add(prop, value);
         }
-    }, {
-        key: 'delete',
 
         /**
          * @method
@@ -194,13 +202,15 @@ var ObservableObject = (function () {
          *
          * @param {String} prop
          */
+
+    }, {
+        key: 'delete',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function _delete(prop) {
             var oldValue = this[prop];
 
             return delete this[prop] ? this.__makeChanges(prop, 'delete', oldValue) : this;
         }
-    }, {
-        key: 'observe',
 
         /**
          * @method
@@ -210,6 +220,10 @@ var ObservableObject = (function () {
          * @param {Function}        cb: listener
          * @param {Array}    [accepts]: a list of acceptable changes
          */
+
+    }, {
+        key: 'observe',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function observe(cb) {
             var accepts = arguments.length <= 1 || arguments[1] === undefined ? DEFAULT_ACCEPTS : arguments[1];
 
@@ -226,8 +240,6 @@ var ObservableObject = (function () {
 
             return this;
         }
-    }, {
-        key: 'unobserve',
 
         /**
          * @method
@@ -236,6 +248,10 @@ var ObservableObject = (function () {
          *
          * @param {Function} cb
          */
+
+    }, {
+        key: 'unobserve',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function unobserve(cb) {
             if (ES7_OBSERVE) {
                 return Object.unobserve(this, cb);

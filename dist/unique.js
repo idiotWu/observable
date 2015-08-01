@@ -4,7 +4,7 @@ var _get = require('babel-runtime/helpers/get')['default'];
 
 var _inherits = require('babel-runtime/helpers/inherits')['default'];
 
-var _createClass = require('babel-runtime/helpers/create-class')['default'];
+var _createDecoratedClass = require('babel-runtime/helpers/create-decorated-class')['default'];
 
 var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
 
@@ -19,6 +19,8 @@ var _interopRequireDefault = require('babel-runtime/helpers/interop-require-defa
 Object.defineProperty(exports, '__esModule', {
     value: true
 });
+
+var _coreDecorators = require('core-decorators');
 
 var _core = require('./core');
 
@@ -197,8 +199,9 @@ var UniqueObserver = (function (_ObservableObject) {
         _get(Object.getPrototypeOf(UniqueObserver.prototype), 'constructor', this).apply(this, arguments);
     }
 
-    _createClass(UniqueObserver, [{
+    _createDecoratedClass(UniqueObserver, [{
         key: 'unique',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function unique() {
             for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
                 args[_key] = arguments[_key];
@@ -208,6 +211,7 @@ var UniqueObserver = (function (_ObservableObject) {
         }
     }, {
         key: 'disunique',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function disunique() {
             for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
                 args[_key2] = arguments[_key2];
@@ -217,6 +221,7 @@ var UniqueObserver = (function (_ObservableObject) {
         }
     }], [{
         key: 'watch',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function watch(obj) {
             for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
                 args[_key3 - 1] = arguments[_key3];
@@ -226,6 +231,7 @@ var UniqueObserver = (function (_ObservableObject) {
         }
     }, {
         key: 'unwatch',
+        decorators: [_coreDecorators.nonconfigurable, _coreDecorators.nonenumerable],
         value: function unwatch(obj) {
             for (var _len4 = arguments.length, args = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
                 args[_key4 - 1] = arguments[_key4];

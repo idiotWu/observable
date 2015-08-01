@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/idiotWu/observable#readme",
   "devDependencies": {
+    "babel-eslint": "^4.0.5",
     "chai": "^3.0.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^5.1.0",
@@ -33,6 +34,7 @@
     "promise": "^7.0.3"
   },
   "dependencies": {
-    "babel-runtime": "^5.8.20"
+    "babel-runtime": "^5.8.20",
+    "core-decorators": "^0.1.5"
   }
 }
