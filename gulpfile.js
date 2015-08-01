@@ -10,11 +10,7 @@ var SOURCE = 'src/*.js';
 gulp.task('compile', function() {
     return gulp.src(SOURCE)
         .pipe(babel({
-            optional: [
-                'runtime',
-                'es7.decorators',
-                'es7.objectRestSpread'
-            ]
+            optional: ['runtime']
         }))
         .pipe(gulp.dest('dist'));
 });

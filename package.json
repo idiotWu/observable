@@ -41,7 +41,6 @@
     "promise": "^7.0.3"
   },
   "dependencies": {
-    "babel-runtime": "^5.8.20",
-    "core-decorators": "^0.2.0"
+    "babel-runtime": "^5.8.20"
   }
 }

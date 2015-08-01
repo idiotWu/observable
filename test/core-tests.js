@@ -21,9 +21,15 @@ describe('======= CORE TESTS ======', function() {
                 b: 2
             };
 
-            it('Object.keys(instance) === ["a", "b"]', function() {
+            it('prototype properties should be unenumable', function() {
                 var observable = new Observable(init);
                 expect(observable).to.have.all.keys('a', 'b');
+
+                var keys = [];
+                for (var key in observable) {
+                    keys.push(key);
+                }
+                expect(keys.join('')).to.equal('ab');
             });
 
             it('listener should recieve a change of type:"update"', function(done) {

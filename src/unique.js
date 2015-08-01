@@ -1,4 +1,3 @@
-import { nonenumerable, nonconfigurable } from 'core-decorators';
 import ObservableObject from './core';
 
 let watchers = [];
@@ -145,26 +144,18 @@ let unwatchProp = (obj, prop, cb) => {
 };
 
 class UniqueObserver extends ObservableObject {
-    @nonenumerable
-    @nonconfigurable
     unique(...args) {
         return watchProp(this, ...args);
     }
 
-    @nonenumerable
-    @nonconfigurable
     disunique(...args) {
         return unwatchProp(this, ...args);
     }
 
-    @nonenumerable
-    @nonconfigurable
     static watch(obj, ...args) {
         return watchProp(obj, ...args);
     }
 
-    @nonenumerable
-    @nonconfigurable
     static unwatch(obj, ...args) {
         return unwatchProp(obj, ...args);
     }

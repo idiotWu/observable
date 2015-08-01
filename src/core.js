@@ -1,5 +1,3 @@
-import { nonenumerable, nonconfigurable } from 'core-decorators';
-
 const ES7_OBSERVE = typeof Object.observe === 'function' && Object.observe;
 // const ES7_OBSERVE = false;
 const DEFAULT_ACCEPTS = ['add', 'update', 'delete'];
@@ -56,8 +54,6 @@ class ObservableObject {
      *
      * @return {Object} this
      */
-    @nonenumerable
-    @nonconfigurable
     __makeChanges(prop, type, oldValue) {
         if (ES7_OBSERVE || !this.__listeners.length) {
             return this;
@@ -117,8 +113,6 @@ class ObservableObject {
      * @param {String}  prop: property name to be add
      * @param {Any}    value: property value
      */
-    @nonenumerable
-    @nonconfigurable
     add(prop, value) {
         if (this.hasOwnProperty(prop)) {
             return this.update(prop, value);
@@ -137,8 +131,6 @@ class ObservableObject {
      * @param {String} prop
      * @param {Any}    newValue
      */
-    @nonenumerable
-    @nonconfigurable
     update(prop, newValue) {
         if (!this.hasOwnProperty(prop)) {
             return this.add(prop, newValue);
@@ -163,8 +155,6 @@ class ObservableObject {
      * @param {String} prop
      * @param {Any}    value
      */
-    @nonenumerable
-    @nonconfigurable
     set(prop, value) {
         return this.add(prop, value);
     }
@@ -176,8 +166,6 @@ class ObservableObject {
      *
      * @param {String} prop
      */
-    @nonenumerable
-    @nonconfigurable
     delete(prop) {
         let oldValue = this[prop];
 
@@ -193,8 +181,6 @@ class ObservableObject {
      * @param {Function}        cb: listener
      * @param {Array}    [accepts]: a list of acceptable changes
      */
-    @nonenumerable
-    @nonconfigurable
     observe(cb, accepts = DEFAULT_ACCEPTS) {
         if (typeof cb === 'function') {
             if (ES7_OBSERVE) {
@@ -217,8 +203,6 @@ class ObservableObject {
      *
      * @param {Function} cb
      */
-    @nonenumerable
-    @nonconfigurable
     unobserve(cb) {
         if (ES7_OBSERVE) {
             return Object.unobserve(this, cb);
