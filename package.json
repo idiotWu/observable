@@ -3,6 +3,13 @@
   "version": "0.0.10",
   "description": "Object.observe() like library",
   "main": "index.js",
+  "files": [
+    "dist",
+    "src",
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "npm run test-core && npm run test-unique",
     "test-core": "mocha test/core-tests.js",
