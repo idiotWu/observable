@@ -1,0 +1,26 @@
+{
+  "name": "observable.js",
+  "main": "src/core.js",
+  "version": "0.1.1",
+  "homepage": "https://github.com/idiotWu/observable",
+  "authors": [
+    "Dolphin Wood <dolphin.w.e@gmail.com>"
+  ],
+  "description": "A library provides you a way to listen changes on a object.",
+  "moduleType": [
+    "es6"
+  ],
+  "keywords": [
+    "object",
+    "observe",
+    "mutable"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
