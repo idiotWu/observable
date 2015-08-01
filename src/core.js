@@ -8,17 +8,11 @@ class ObservableObject {
      * @param {Object}       [obj]: initial object
      * @param {Function}      [cb]: changes listener
      * @param {Array}    [accepts]: a list of acceptable changes
-     *
-     * @return {Object} this
      */
     constructor(obj, cb, accepts = DEFAULT_ACCEPTS) {
         cb = typeof cb === 'function' && cb;
 
-        if (obj) {
-            Object.keys(obj).forEach((prop) => {
-                this[prop] = obj[prop];
-            });
-        }
+        Object.assign(this, obj);
 
         Object.defineProperties(this, {
             __listeners: {
@@ -113,11 +107,11 @@ class ObservableObject {
 
     /**
      * @method
+     * @chainable
      * add new property to observable object
+     *
      * @param {String}  prop: property name to be add
      * @param {Any}    value: property value
-     *
-     * @return {Object} this
      */
     add(prop, value) {
         if (this.hasOwnProperty(prop)) {
@@ -131,11 +125,11 @@ class ObservableObject {
 
     /**
      * @method
+     * @chainable
      * update property value
+     *
      * @param {String} prop
      * @param {Any}    newValue
-     *
-     * @return {Object} this
      */
     update(prop, newValue) {
         if (!this.hasOwnProperty(prop)) {
@@ -155,11 +149,11 @@ class ObservableObject {
 
     /**
      * @method
+     * @chainable
      * syntax sugar for instance.add | instance.update
+     *
      * @param {String} prop
      * @param {Any}    value
-     *
-     * @return {Object} this
      */
     set(prop, value) {
         return this.add(prop, value);
@@ -167,10 +161,10 @@ class ObservableObject {
 
     /**
      * @method
+     * @chainable
      * delete property
-     * @param {String} prop
      *
-     * @return {Object} this
+     * @param {String} prop
      */
     delete(prop) {
         let oldValue = this[prop];
@@ -181,11 +175,11 @@ class ObservableObject {
 
     /**
      * @method
+     * @chainable
      * add new observe listener
+     *
      * @param {Function}        cb: listener
      * @param {Array}    [accepts]: a list of acceptable changes
-     *
-     * @return {Object} this
      */
     observe(cb, accepts = DEFAULT_ACCEPTS) {
         if (typeof cb === 'function') {
@@ -204,18 +198,18 @@ class ObservableObject {
 
     /**
      * @method
+     * @chainable
      * remove observe listener
-     * @param {Function} cb
      *
-     * @return {Object} this
+     * @param {Function} cb
      */
     unobserve(cb) {
         if (ES7_OBSERVE) {
             return Object.unobserve(this, cb);
         }
 
-        this.__listeners.some((listener, index, listeners) => {
-            return listener.fn === cb && listeners.splice(index, 1);
+        this.__listeners.some((listener, index, all) => {
+            return listener.fn === cb && all.splice(index, 1);
         });
 
         return this;

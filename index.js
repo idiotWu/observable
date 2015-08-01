@@ -1,3 +1,4 @@
 'use strict';
 
-module.exports = require('./dist/core');
+module.exports = exports = require('./dist/core');
+exports.Unique = require('./dist/unique');

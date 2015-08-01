@@ -1,201 +1,242 @@
-(function (global, factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['exports', 'module', './core'], factory);
-    } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-        factory(exports, module, require('./core'));
-    } else {
-        var mod = {
-            exports: {}
-        };
-        factory(mod.exports, mod, global.ObservableObject);
-        global.unique = mod.exports;
-    }
-})(this, function (exports, module, _core) {
-    'use strict';
+'use strict';
 
-    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _get = require('babel-runtime/helpers/get')['default'];
 
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _inherits = require('babel-runtime/helpers/inherits')['default'];
 
-    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+var _createClass = require('babel-runtime/helpers/create-class')['default'];
 
-    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
 
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+var _getIterator = require('babel-runtime/core-js/get-iterator')['default'];
 
-    var _ObservableObject2 = _interopRequireDefault(_core);
+var _Object$getOwnPropertyDescriptor = require('babel-runtime/core-js/object/get-own-property-descriptor')['default'];
 
-    var watchers = [];
+var _Object$defineProperty = require('babel-runtime/core-js/object/define-property')['default'];
 
-    /**
-     * get watcher
-     * @param {Object} obj: object to be spied on
-     * @param {String} prop: property to be spied on
-     *
-     * @return {Object} watcher
-     */
-    var getWatcher = function getWatcher(obj, prop) {
-        var ret = undefined;
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
 
-        watchers.some(function (watcher) {
-            if (watcher.object === obj && watcher.property === prop) {
-                ret = watcher;
-                return true;
-            }
-        });
-
-        return ret;
-    };
-
-    /**
-     * @method
-     * create observer for one property in any object
-     * @param {Object}       obj: target object
-     * @param {String}      prop: property name
-     * @param {Function}    [cb]: changes' listener
-     * @param {Any}   [oldValue]: initial value for the property
-     *
-     * @return {Object} target object
-     */
-    var watchProp = function watchProp(obj, prop, cb, oldValue) {
-        var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
-
-        if (descriptor && !descriptor.configurable) {
-            return obj;
-        }
-
-        if (oldValue === undefined) {
-            oldValue = obj[prop];
-        }
-
-        if (obj instanceof _ObservableObject2['default']) {
-            obj.set(prop, oldValue);
-        } else {
-            obj[prop] = oldValue;
-        }
-
-        var watcher = getWatcher(obj, prop);
-
-        if (!watcher) {
-            watcher = {
-                object: obj,
-                property: prop,
-                listeners: [],
-                pending: {
-                    changes: []
-                }
-            };
-            watchers.push(watcher);
-        }
-
-        if (typeof cb === 'function') {
-            watcher.listeners.push(cb);
-        }
-
-        Object.defineProperty(obj, prop, {
-            get: function get() {
-                return oldValue;
-            },
-            set: function set(newValue) {
-                if (newValue === oldValue) {
-                    return;
-                }
-
-                if (!this.hasOwnProperty(prop)) {
-                    // redefine new value in instance
-                    Object.defineProperty(this, prop, {
-                        value: newValue,
-                        enumerable: true,
-                        writable: true,
-                        configurable: true
-                    });
-
-                    return;
-                }
-
-                clearTimeout(watcher.pending.timer);
-
-                var all = watcher.pending.changes;
-                var change = {
-                    name: prop,
-                    type: 'update',
-                    object: obj,
-                    oldValue: oldValue
-                };
-
-                oldValue = newValue;
-                all.push(change);
-
-                watcher.pending.timer = setTimeout(function () {
-                    watcher.listeners.forEach(function (fn) {
-                        fn(all);
-                    });
-
-                    all.length = 0;
-                });
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        return obj;
-    };
-
-    /**
-     * unwatch property changes
-     * @param {Object}  obj: target object
-     * @param {String} prop: property name
-     * @param {Function} cb: listener to be remove
-     *
-     * @return {Object} target object
-     */
-    var unwatchProp = function unwatchProp(obj, prop, cb) {
-        var watcher = getWatcher(obj, prop);
-
-        if (!watcher) {
-            return obj;
-        }
-
-        watcher.listeners.some(function (listener, index, all) {
-            return listener === cb && all.splice(index, 1);
-        });
-
-        return obj;
-    };
-
-    var UniqueObserver = (function (_ObservableObject) {
-        _inherits(UniqueObserver, _ObservableObject);
-
-        function UniqueObserver() {
-            _classCallCheck(this, UniqueObserver);
-
-            _get(Object.getPrototypeOf(UniqueObserver.prototype), 'constructor', this).apply(this, arguments);
-        }
-
-        _createClass(UniqueObserver, [{
-            key: 'unique',
-            value: function unique(prop, listener, value) {
-                return watchProp(this, prop, listener, value);
-            }
-        }, {
-            key: 'disunique',
-            value: function disunique(prop, listener) {
-                return unwatchProp(this, prop, listener);
-            }
-        }], [{
-            key: 'watch',
-            value: function watch(obj, prop, cb, value) {
-                return watchProp(obj, prop, cb, value);
-            }
-        }, {
-            key: 'unwatch',
-            value: function unwatch(obj, prop, cb) {
-                return unwatchProp(obj, prop, cb);
-            }
-        }]);
-
-        return UniqueObserver;
-    })(_ObservableObject2['default']);
-
-    module.exports = UniqueObserver;
+Object.defineProperty(exports, '__esModule', {
+    value: true
 });
+
+var _core = require('./core');
+
+var _core2 = _interopRequireDefault(_core);
+
+var watchers = [];
+
+/**
+ * get watcher
+ * @param {Object} obj: object to be spied on
+ * @param {String} prop: property to be spied on
+ *
+ * @return {Object} watcher
+ */
+var getWatcher = function getWatcher(obj, prop) {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+        for (var _iterator = _getIterator(watchers), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var watcher = _step.value;
+
+            if (watcher.object === obj && watcher.property === prop) {
+                return watcher;
+            }
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator['return']) {
+                _iterator['return']();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
+        }
+    }
+};
+
+/**
+ * @method
+ * create observer for one property in any object
+ * @param {Object}       obj: target object
+ * @param {String}      prop: property name
+ * @param {Function}    [cb]: changes' listener
+ * @param {Any}   [oldValue]: initial value for the property
+ *
+ * @return {Object} target object
+ */
+var watchProp = function watchProp(obj, prop, cb, oldValue) {
+    if (!obj instanceof Object) {
+        throw new Error('Obsevable.watch called on non-object');
+    }
+
+    if (!prop) return obj;
+
+    var descriptor = _Object$getOwnPropertyDescriptor(obj, prop);
+
+    if (descriptor && !descriptor.configurable) {
+        return obj;
+    }
+
+    if (oldValue === undefined) {
+        oldValue = obj[prop];
+    }
+
+    if (obj instanceof _core2['default']) {
+        obj.set(prop, oldValue);
+    } else {
+        obj[prop] = oldValue;
+    }
+
+    var watcher = getWatcher(obj, prop);
+
+    if (!watcher) {
+        watcher = {
+            object: obj,
+            property: prop,
+            listeners: [],
+            pending: {
+                changes: []
+            }
+        };
+        watchers.push(watcher);
+    }
+
+    if (typeof cb === 'function') {
+        watcher.listeners.push(cb);
+    }
+
+    _Object$defineProperty(obj, prop, {
+        get: function get() {
+            return oldValue;
+        },
+        set: function set(newValue) {
+            if (newValue === oldValue) {
+                return;
+            }
+
+            if (!this.hasOwnProperty(prop)) {
+                // redefine new value in instance
+                _Object$defineProperty(this, prop, {
+                    value: newValue,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                return;
+            }
+
+            clearTimeout(watcher.pending.timer);
+
+            var all = watcher.pending.changes;
+            var change = {
+                name: prop,
+                type: 'update',
+                object: obj,
+                oldValue: oldValue
+            };
+
+            oldValue = newValue;
+            all.push(change);
+
+            watcher.pending.timer = setTimeout(function () {
+                watcher.listeners.forEach(function (fn) {
+                    fn(all);
+                });
+
+                all.length = 0;
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    return obj;
+};
+
+/**
+ * unwatch property changes
+ * @param {Object}  obj: target object
+ * @param {String} prop: property name
+ * @param {Function} cb: listener to be remove
+ *
+ * @return {Object} target object
+ */
+var unwatchProp = function unwatchProp(obj, prop, cb) {
+    if (!obj instanceof Object) {
+        throw new Error('Obsevable.unwatch called on non-object');
+    }
+
+    var watcher = getWatcher(obj, prop);
+
+    if (!watcher) {
+        return obj;
+    }
+
+    watcher.listeners.some(function (listener, index, all) {
+        return listener === cb && all.splice(index, 1);
+    });
+
+    return obj;
+};
+
+var UniqueObserver = (function (_ObservableObject) {
+    _inherits(UniqueObserver, _ObservableObject);
+
+    function UniqueObserver() {
+        _classCallCheck(this, UniqueObserver);
+
+        _get(Object.getPrototypeOf(UniqueObserver.prototype), 'constructor', this).apply(this, arguments);
+    }
+
+    _createClass(UniqueObserver, [{
+        key: 'unique',
+        value: function unique() {
+            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                args[_key] = arguments[_key];
+            }
+
+            return watchProp.apply(undefined, [this].concat(args));
+        }
+    }, {
+        key: 'disunique',
+        value: function disunique() {
+            for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                args[_key2] = arguments[_key2];
+            }
+
+            return unwatchProp.apply(undefined, [this].concat(args));
+        }
+    }], [{
+        key: 'watch',
+        value: function watch(obj) {
+            for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+                args[_key3 - 1] = arguments[_key3];
+            }
+
+            return watchProp.apply(undefined, [obj].concat(args));
+        }
+    }, {
+        key: 'unwatch',
+        value: function unwatch(obj) {
+            for (var _len4 = arguments.length, args = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+                args[_key4 - 1] = arguments[_key4];
+            }
+
+            return unwatchProp.apply(undefined, [obj].concat(args));
+        }
+    }]);
+
+    return UniqueObserver;
+})(_core2['default']);
+
+exports['default'] = UniqueObserver;
+module.exports = exports['default'];

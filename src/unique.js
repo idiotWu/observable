@@ -10,16 +10,11 @@ let watchers = [];
  * @return {Object} watcher
  */
  let getWatcher = (obj, prop) => {
-     let ret;
-
-     watchers.some(function(watcher) {
-         if (watcher.object === obj && watcher.property === prop) {
-             ret = watcher;
-             return true;
-         }
-     });
-
-     return ret;
+     for (let watcher of watchers) {
+        if (watcher.object === obj && watcher.property === prop) {
+            return watcher;
+        }
+     }
  };
 
 /**
@@ -33,6 +28,12 @@ let watchers = [];
  * @return {Object} target object
  */
 let watchProp = (obj, prop, cb, oldValue) => {
+    if (!obj instanceof Object) {
+        throw new Error('Obsevable.watch called on non-object');
+    }
+
+    if (!prop) return obj;
+
     let descriptor = Object.getOwnPropertyDescriptor(obj, prop);
 
     if (descriptor && !descriptor.configurable) {
@@ -125,6 +126,10 @@ let watchProp = (obj, prop, cb, oldValue) => {
  * @return {Object} target object
  */
 let unwatchProp = (obj, prop, cb) => {
+    if (!obj instanceof Object) {
+        throw new Error('Obsevable.unwatch called on non-object');
+    }
+
     let watcher = getWatcher(obj, prop);
 
     if (!watcher) {
@@ -139,20 +144,20 @@ let unwatchProp = (obj, prop, cb) => {
 };
 
 class UniqueObserver extends ObservableObject {
-    unique(prop, listener, value) {
-        return watchProp(this, prop, listener, value);
+    unique(...args) {
+        return watchProp(this, ...args);
     }
 
-    disunique(prop, listener) {
-        return unwatchProp(this, prop, listener);
+    disunique(...args) {
+        return unwatchProp(this, ...args);
     }
 
-    static watch(obj, prop, cb, value) {
-        return watchProp(obj, prop, cb, value);
+    static watch(obj, ...args) {
+        return watchProp(obj, ...args);
     }
 
-    static unwatch(obj, prop, cb) {
-        return unwatchProp(obj, prop, cb);
+    static unwatch(obj, ...args) {
+        return unwatchProp(obj, ...args);
     }
 }
 

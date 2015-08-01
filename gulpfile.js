@@ -10,7 +10,7 @@ var SOURCE = 'src/*.js';
 gulp.task('compile', function() {
     return gulp.src(SOURCE)
         .pipe(babel({
-            modules: 'umd'
+            optional: ['runtime']
         }))
         .pipe(gulp.dest('dist'));
 });
