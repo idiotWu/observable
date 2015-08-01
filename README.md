@@ -16,7 +16,7 @@ npm install observable.js
 
 As MaxArt2501 has explained [here](https://github.com/MaxArt2501/object-observe/blob/master/doc/index.md#under-the-hood), we have no way to emulate this method other than dirty checking. **Instead of modifying object directly, we use some methods as proxy functions(we call them `modifiers`) to make changes and invoke listeners.**
 
-If you are not annoyed by `Pub/Sub` model, welcome to the conversation :)
+If you are not annoyed with `Pub/Sub` model, welcome to the conversation :)
 
 ## Basical Usage
 
