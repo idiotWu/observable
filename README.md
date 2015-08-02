@@ -116,7 +116,9 @@ import { UniqueObsever } from 'observable.js';
 
 ### How it works
 
-Unique observer is a sub class of `Observable` and accessing property through [`getter`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) and [`setter`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set). **Now you can modify the property directly like `obj.a = 1` or `delete obj.a`.**
+Unique observer is a sub class of `Observable` and accessing property through [`getter`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) and [`setter`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set). **Now you can modify the property directly like `obj.a = 1`.**
+
+**NOTICE: when apply unique observer onto specific property, only changes of type:update will be captured!**
 
 ### unique#unique( String:prop, Function:listener, Any:value )
 
@@ -177,8 +179,9 @@ An universal method of removing unique listener on any object.
 ## Limitations
 
 1. Only changes made through `obs#add`, `obs#update`, `obs#set`, `obs#delete` will be captured
+
 2. Don't support change types of "reconfigure", "setPrototype" or "preventExtensions"
-3. Source code has transpiled with babel, meanwhile, some polyfills are included too. If you don't need these polyfills, please import `'observable.js/src/*'` instead.
+
 
 ## License
 
