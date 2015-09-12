@@ -8,6 +8,8 @@ var _createClass = require('babel-runtime/helpers/create-class')['default'];
 
 var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
 
+var _toConsumableArray = require('babel-runtime/helpers/to-consumable-array')['default'];
+
 var _getIterator = require('babel-runtime/core-js/get-iterator')['default'];
 
 var _Object$getOwnPropertyDescriptor = require('babel-runtime/core-js/object/get-own-property-descriptor')['default'];
@@ -149,7 +151,7 @@ var watchProp = function watchProp(obj, prop, cb, oldValue) {
 
             watcher.pending.timer = setTimeout(function () {
                 watcher.listeners.forEach(function (fn) {
-                    fn(all);
+                    fn([].concat(_toConsumableArray(all)));
                 });
 
                 all.length = 0;
