@@ -104,7 +104,7 @@ let watchProp = (obj, prop, cb, oldValue) => {
 
             watcher.pending.timer = setTimeout(() => {
                 watcher.listeners.forEach((fn) => {
-                    fn(all);
+                    fn([...all]);
                 });
 
                 all.length = 0;
